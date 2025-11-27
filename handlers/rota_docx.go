@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"strings"
@@ -195,8 +196,8 @@ func GetWeekRotaDOCX(c *gin.Context) {
 	}
 
 	// Generate document bytes
-	docBytes, err := doc.WriteToBytes()
-	if err != nil {
+	var buf bytes.Buffer
+	if err := doc.Save(&buf); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate DOCX"})
 		return
 	}
@@ -205,5 +206,5 @@ func GetWeekRotaDOCX(c *gin.Context) {
 	c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 	filename := fmt.Sprintf("rota_%s.docx", weekStartStr)
 	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
-	c.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", docBytes)
+	c.Data(http.StatusOK, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", buf.Bytes())
 }
