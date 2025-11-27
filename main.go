@@ -67,6 +67,7 @@ func main() {
 			// Rota View
 			protected.GET("/rota/week", handlers.GetWeekRota)
 			protected.GET("/rota/week/pdf", handlers.GetWeekRotaPDF)
+			protected.GET("/rota/week/docx", handlers.GetWeekRotaDOCX)
 
 			// Admin - Import existing schedule
 			protected.POST("/admin/import-state", handlers.ImportCurrentState)
