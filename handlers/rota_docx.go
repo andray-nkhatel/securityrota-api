@@ -10,7 +10,7 @@ import (
 	"securityrota-api/models"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nguyenthenguyen/docx"
+	"github.com/unidoc/unioffice/document"
 )
 
 // GetWeekRotaDOCX godoc
@@ -89,28 +89,31 @@ func GetWeekRotaDOCX(c *gin.Context) {
 		}
 	}
 
-	// Create a new docx document
-	doc := docx.NewDoc()
+	// Create a new document
+	doc := document.New()
 
 	// Title
 	para := doc.AddParagraph()
-	run := para.AddText("Security Officer Duty Rota")
-	run.Properties().Bold()
-	run.Properties().Size(28)
+	run := para.AddRun()
+	run.AddText("Security Officer Duty Rota")
+	run.Properties().SetBold(true)
+	run.Properties().SetSize(28)
 
 	para = doc.AddParagraph()
-	run = para.AddText(fmt.Sprintf("Week: %s to %s", weekStart.Format("Mon 02 Jan 2006"), weekEnd.Format("Mon 02 Jan 2006")))
-	run.Properties().Size(22)
+	run = para.AddRun()
+	run.AddText(fmt.Sprintf("Week: %s to %s", weekStart.Format("Mon 02 Jan 2006"), weekEnd.Format("Mon 02 Jan 2006")))
+	run.Properties().SetSize(22)
 
 	para = doc.AddParagraph()
 	nightShiftTeam := 1
 	if rotation.DayShiftTeam == 1 {
 		nightShiftTeam = 2
 	}
-	run = para.AddText(fmt.Sprintf("Day Shift: Team %d | Night Shift: Team %d", rotation.DayShiftTeam, nightShiftTeam))
-	run.Properties().Size(18)
+	run = para.AddRun()
+	run.AddText(fmt.Sprintf("Day Shift: Team %d | Night Shift: Team %d", rotation.DayShiftTeam, nightShiftTeam))
+	run.Properties().SetSize(18)
 
-	doc.AddParagraph().AddText("")
+	doc.AddParagraph()
 
 	// Create table
 	table := doc.AddTable()
@@ -118,50 +121,76 @@ func GetWeekRotaDOCX(c *gin.Context) {
 	// Header row
 	row := table.AddRow()
 	cell := row.AddCell()
-	cell.AddParagraph().AddText("SHIFT TYPE").Properties().Bold()
+	para = cell.AddParagraph()
+	run = para.AddRun()
+	run.AddText("SHIFT TYPE")
+	run.Properties().SetBold(true)
 
 	dayNames := []string{"SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"}
 	for i, day := range dayNames {
 		cell = row.AddCell()
 		para = cell.AddParagraph()
-		para.AddText(day).Properties().Bold()
-		para.AddBreak()
-		para.AddText(days[i].date.Format("02/01/06"))
+		run = para.AddRun()
+		run.AddText(day)
+		run.Properties().SetBold(true)
+		para.AddRun().AddBreak()
+		para.AddRun().AddText(days[i].date.Format("02/01/06"))
 	}
 
 	// DAY SHIFT row
 	row = table.AddRow()
 	cell = row.AddCell()
-	cell.AddParagraph().AddText("DAY SHIFT").Properties().Bold()
+	para = cell.AddParagraph()
+	run = para.AddRun()
+	run.AddText("DAY SHIFT")
+	run.Properties().SetBold(true)
 
 	for _, d := range days {
 		cell = row.AddCell()
-		for _, name := range d.dayShift {
-			cell.AddParagraph().AddText(name)
+		for i, name := range d.dayShift {
+			if i > 0 {
+				cell.AddParagraph()
+			}
+			para = cell.AddParagraph()
+			para.AddRun().AddText(name)
 		}
 	}
 
 	// NIGHT SHIFT row
 	row = table.AddRow()
 	cell = row.AddCell()
-	cell.AddParagraph().AddText("NIGHT SHIFT").Properties().Bold()
+	para = cell.AddParagraph()
+	run = para.AddRun()
+	run.AddText("NIGHT SHIFT")
+	run.Properties().SetBold(true)
 
 	for _, d := range days {
 		cell = row.AddCell()
-		for _, name := range d.nightShift {
-			cell.AddParagraph().AddText(name)
+		for i, name := range d.nightShift {
+			if i > 0 {
+				cell.AddParagraph()
+			}
+			para = cell.AddParagraph()
+			para.AddRun().AddText(name)
 		}
 	}
 
 	// DAY-OFF row
 	row = table.AddRow()
 	cell = row.AddCell()
-	cell.AddParagraph().AddText("DAY-OFF").Properties().Bold()
+	para = cell.AddParagraph()
+	run = para.AddRun()
+	run.AddText("DAY-OFF")
+	run.Properties().SetBold(true)
 
 	for _, d := range days {
 		cell = row.AddCell()
-		for _, name := range d.leave {
-			cell.AddParagraph().AddText(name)
+		for i, name := range d.leave {
+			if i > 0 {
+				cell.AddParagraph()
+			}
+			para = cell.AddParagraph()
+			para.AddRun().AddText(name)
 		}
 	}
 
