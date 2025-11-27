@@ -4,7 +4,7 @@ services:
     container_name: securityrota-app
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "8090:8080"
     environment:
       - GIN_MODE=release
       - DB_HOST=postgres
@@ -12,7 +12,7 @@ services:
       - DB_USER=rota
       - DB_PASSWORD=${DB_PASSWORD:-rotapass}
       - DB_NAME=securityrota
-      - JWT_SECRET=${JWT_SECRET:85ucosodoisdoiodsowe9wekdsodjioosjd2sasJa}
+      - JWT_SECRET=${JWT_SECRET:change-this-in-production}
     depends_on:
       postgres:
         condition: service_healthy
