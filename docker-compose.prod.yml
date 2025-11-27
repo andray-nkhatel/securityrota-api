@@ -1,0 +1,38 @@
+services:
+  app:
+    image: securityrota:latest
+    container_name: securityrota-app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - GIN_MODE=release
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=rota
+      - DB_PASSWORD=${DB_PASSWORD:-rotapass}
+      - DB_NAME=securityrota
+      - JWT_SECRET=${JWT_SECRET:85ucosodoisdoiodsowe9wekdsodjioosjd2sasJa}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: securityrota-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: rota
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-rotapass}
+      POSTGRES_DB: securityrota
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rota -d securityrota"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+
