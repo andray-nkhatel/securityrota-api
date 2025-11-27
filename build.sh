@@ -1,12 +1,11 @@
 #!/bin/bash
 # Build script for Security Rota App
-# This builds the frontend and backend into a single Docker image
+# Builds frontend and backend inside Docker (no local Node.js required)
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLIENT_DIR="$SCRIPT_DIR/../securityrota-client"
-API_DIR="$SCRIPT_DIR"
 
 echo "=== Building Security Rota App ==="
 
@@ -16,32 +15,31 @@ if [ ! -d "$CLIENT_DIR" ]; then
     exit 1
 fi
 
-# Step 1: Build frontend
+# Step 1: Copy client to build context
 echo ""
-echo "=== Step 1: Building Frontend ==="
-cd "$CLIENT_DIR"
+echo "=== Step 1: Preparing Build Context ==="
+rm -rf "$SCRIPT_DIR/client"
+cp -r "$CLIENT_DIR" "$SCRIPT_DIR/client"
 
-# Create/update .env for production build
-echo "VITE_API_BASE_URL=/api/v1" > .env.production
+# Create production env
+echo "VITE_API_BASE_URL=/api/v1" > "$SCRIPT_DIR/client/.env.production"
 
-npm ci
-npm run build
-
-# Step 2: Copy frontend build to API static folder
+# Step 2: Build Docker image
 echo ""
-echo "=== Step 2: Copying Frontend Build ==="
-cd "$API_DIR"
-rm -rf static
-cp -r "$CLIENT_DIR/dist" static
-
-echo "Frontend copied to $API_DIR/static"
-
-# Step 3: Build Docker image
-echo ""
-echo "=== Step 3: Building Docker Image ==="
+echo "=== Step 2: Building Docker Image ==="
+cd "$SCRIPT_DIR"
 docker build -t securityrota:latest .
+
+# Cleanup
+echo ""
+echo "=== Cleanup ==="
+rm -rf "$SCRIPT_DIR/client"
 
 echo ""
 echo "=== Build Complete ==="
-echo "Run with: docker-compose -f docker-compose.prod.yml up -d"
-
+echo ""
+echo "Run with:"
+echo "  docker-compose -f docker-compose.prod.yml up -d"
+echo ""
+echo "Access at: http://localhost:8080"
+echo "Default login: admin / admin123"
